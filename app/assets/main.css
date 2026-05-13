@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* base */
+body {
+  margin: 0;
+  font-family: "Tajawal", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* focus (keyboard accessibility) */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* remove outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* print layout */
+@media print {
+  body * {
+    display: none;
+    visibility: hidden;
+  }
+
+  #certificate {
+    display: block !important;
+    visibility: visible !important;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 2cm;
+    box-sizing: border-box;
+  }
+
+  #certificate * {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /* fix Arabic font in print */
+  #certificate [style*="font-family"] {
+    font-family: 'Noto Naskh Arabic', serif !important;
+  }
+}
+
+/* reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
