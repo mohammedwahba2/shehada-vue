@@ -46,17 +46,17 @@ useSeoMeta({
   ogTitle: 'Shahada App - Learn & Recite the Shahada Online',
   ogDescription: 'Learn and recite the Shahada with real-time Arabic voice recognition, guided pronunciation, and personalized certificate.',
   ogType: 'website',
-  ogUrl: 'https://shahada.com',
-  ogImage: 'https://shahada.com/preview.png',
+  ogUrl: 'https://shehada-vue.vercel.app',
+  ogImage: 'https://shehada-vue.vercel.app/preview.png',
   twitterCard: 'summary_large_image',
   twitterTitle: 'Shahada App - Learn & Recite the Shahada Online',
   twitterDescription: 'Learn and recite the Shahada with real-time Arabic voice recognition and guided pronunciation.',
-  twitterImage: 'https://shahada.com/preview.png',
+  twitterImage: 'https://shehada-vue.vercel.app/preview.png',
 })
 
 useHead({
   link: [
-    { rel: 'canonical', href: 'https://shahada.com' }
+    { rel: 'canonical', href: 'https://shehada-vue.vercel.app' }
   ]
 })
 

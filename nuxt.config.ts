@@ -45,7 +45,7 @@ export default defineNuxtConfig({
   // Runtime configuration
   runtimeConfig: {
     public: {
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://shahada.com',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://shehada-vue.vercel.app',
       siteName: 'Shahada App',
       siteDescription:
         'Learn and recite the Shahada with real-time Arabic transcription and voice recognition for accurate pronunciation practice.',
