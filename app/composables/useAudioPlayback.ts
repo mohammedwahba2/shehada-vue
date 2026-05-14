@@ -84,17 +84,17 @@ export const useAudioPlayback = (): UseAudioPlaybackReturn => {
    */
   const play = async (src: string): Promise<void> => {
     stop()
-
+  
     const generation = ++playGeneration
     error.value = null
-
+  
     const audio = new Audio(src)
     audio.preload = 'auto'
-    audio.crossOrigin = 'anonymous'
-
+    // audio.crossOrigin = 'anonymous'
+  
     currentAudio.value = audio
 
-    const settled = new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       audio.onended = () => {
         if (generation === playGeneration) {
           isPlaying.value = false
@@ -102,24 +102,49 @@ export const useAudioPlayback = (): UseAudioPlaybackReturn => {
         }
         resolve()
       }
-
+  
       audio.onerror = () => {
         if (generation === playGeneration) {
-          error.value = 'Failed to load audio file'
+          // More specific error based on network state
+          const errorCode = audio.error?.code
+          let errorMsg = 'Failed to load audio file'
+          
+          if (errorCode === 1) errorMsg = 'Loading interrupted'
+          else if (errorCode === 2) errorMsg = 'Network error - check your connection'
+          else if (errorCode === 3) errorMsg = 'Audio format not supported or file corrupted'
+          else if (errorCode === 4) errorMsg = 'Media source not available'
+          
+          error.value = errorMsg
           isPlaying.value = false
           currentAudio.value = null
+          console.error('Audio error:', audio.error, 'Code:', errorCode, 'Src:', src)
         }
         reject(new Error('Failed to load audio file'))
       }
+  
+      audio.play()
+        .then(() => {
+          if (generation === playGeneration) {
+            isPlaying.value = true
+            error.value = null
+          }
+        })
+        .catch((err: DOMException) => {
+          if (generation !== playGeneration) return resolve()
+  
+          if (err.name === 'NotAllowedError') {
+            error.value = 'Could not play audio. Please click the play button.'
+          } else if (err.name === 'NotSupportedError') {
+            error.value = 'Audio format not supported'
+          } else {
+            error.value = 'Something went wrong while playing audio'
+          }
+  
+          isPlaying.value = false
+          resolve()
+        })
     })
-
-    await attemptPlay(audio, generation)
-
-    if (generation !== playGeneration || error.value) return
-
-    await settled
   }
-
   /**
    * Stops playback and clears the current audio instance.
    */

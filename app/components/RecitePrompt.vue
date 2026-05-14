@@ -22,6 +22,11 @@ const { isPlaying, error: playbackError, play, stop } = useAudioPlayback()
 // step audio file path
 const audioSrc = computed(() => `/audio/step${props.step.id}.m4a`)
 
+// Check if browser supports m4a format
+const supportsM4a = typeof document !== 'undefined' 
+  ? new Audio().canPlayType('audio/mp4; codecs="aac"') !== '' 
+  : true
+
 // assume user already interacted (component only used after flow starts)
 const hasUserInteracted = ref(true)
 

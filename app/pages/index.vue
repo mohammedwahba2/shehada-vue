@@ -45,6 +45,7 @@ const {
 } = useSpeechRecognition(speechSessionRefs)
 
 
+
 useSeoMeta({
   title: 'Learn & Recite the Shahada Online',
   description: 'Learn and recite the Shahada with real-time Arabic voice recognition, guided pronunciation, and personalized certificate. Start your journey to Islam today.',
@@ -178,7 +179,21 @@ const scheduleTimer = (ms: number) => {
   overrideTimer.value = setTimeout(() => { orbOverride.value = null }, ms)
 }
 
+// Detect if user is on iOS but NOT using Safari
+const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/i.test(navigator.userAgent)
+const isSafari = typeof navigator !== 'undefined' && (
+  /Safari/i.test(navigator.userAgent) && 
+  !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(navigator.userAgent)
+)
+const isIOSNonSafari = isIOS && !isSafari
+
 const handleStart = async () => {
+  // iOS: SpeechRecognition only works in Safari (Apple restriction)
+  if (isIOSNonSafari) {
+    startupError.value = 'On iPhone, please use Safari browser only. SpeechRecognition is not available in other browsers on iOS.'
+    return
+  }
+
   if (!hasSupport) {
     startupError.value = 'Speech recognition is not supported in your browser. Please try Chrome or Safari.'
     return
