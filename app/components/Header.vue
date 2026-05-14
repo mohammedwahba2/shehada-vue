@@ -47,8 +47,8 @@ const toggleTheme = () => {
           class="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 active:bg-ink/15 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40"
           @click="toggleTheme"
         >
-          <Sun v-if="isDark" :size="18" />
-          <Moon v-else :size="18" />
+          <Sun v-if="isDark" :size="18" :stroke-width="2" class="text-current" />
+          <Moon v-else :size="18" :stroke-width="2" class="text-current" />
         </button>
 
         <MobileMenu />
