@@ -49,7 +49,7 @@ const orbLabel = computed(() => {
       width="200"
       height="200"
       draggable="false"
-      class="transition-opacity duration-300"
+      class="h-52 w-52 max-w-full transition-opacity duration-300 sm:h-64 sm:w-64"
     />
   </div>
 </template>

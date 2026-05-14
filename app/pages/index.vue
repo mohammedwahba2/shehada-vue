@@ -7,6 +7,11 @@ const SPEAKING_ON = 40
 /** Threshold for detecting speech offset */
 const SPEAKING_OFF = 30
 
+/** Mobile device detection - used to disable visualizer on mobile */
+const isMobileDevice = typeof navigator !== 'undefined'
+  ? /iPad|iPhone|iPod|Android/i.test(navigator.userAgent)
+  : false
+
 const isRecording = ref(false)
 const startupError = ref<string | null>(null)
 const orbOverride = ref<null | 'engaged' | 'error'>(null)
@@ -174,30 +179,46 @@ const scheduleTimer = (ms: number) => {
 }
 
 const handleStart = async () => {
-  if (!hasSupport) return
+  if (!hasSupport) {
+    startupError.value = 'Speech recognition is not supported in your browser. Please try Chrome or Safari.'
+    return
+  }
   clearTimer()
   orbOverride.value = null
   startupError.value = null
 
   try {
+    // iOS workaround: Cancel any ongoing speech synthesis first
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel()
       window.speechSynthesis.resume()
-      const primer = new SpeechSynthesisUtterance(" ")
-      primer.volume = 0
-      window.speechSynthesis.speak(primer)
     }
 
-    await startVisualizer().catch(() => {})
+    // On mobile: DO NOT start visualizer at all
+    // iOS Safari: SpeechRecognition runs in separate process and must be the ONLY one accessing mic
+    // Any AudioContext (even after SpeechRecognition starts) causes conflict
+    if (isMobileDevice) {
+      recordingActive.value = true
+      recognitionPausedForGuide.value = false
+      isRecording.value = true
+      startListening()
+      // No visualizer on mobile - orb animation based on SpeechRecognition events only
+    } else {
+      // On desktop: Start visualizer first (more stable)
+      await startVisualizer().catch((visualizerErr) => {
+        console.error('Visualizer error:', visualizerErr)
+      })
+      
+      recordingActive.value = true
+      recognitionPausedForGuide.value = false
+      isRecording.value = true
+      startListening()
+    }
     
-    recordingActive.value = true
-    recognitionPausedForGuide.value = false
-    isRecording.value = true
-    startListening()
     prevStep.value = 0
   } catch (err: any) {
     handleStop()
-    startupError.value = err.message || "Microphone could not be started."
+    startupError.value = err.message || "Microphone could not be started. Please ensure you've granted microphone permission."
   }
 }
 
@@ -231,13 +252,19 @@ const handleRestart = () => {
 
 const handlePromptSpeechStart = () => {
   recognitionPausedForGuide.value = true
-  suspendVisualizer()
+  // Only suspend visualizer on desktop - on mobile it's not running
+  if (!isMobileDevice) {
+    suspendVisualizer()
+  }
   stopListening()
 }
 
 const handlePromptSpeechEnd = () => {
   recognitionPausedForGuide.value = false
-  resumeVisualizer()
+  // Only resume visualizer on desktop - on mobile it's not running
+  if (!isMobileDevice) {
+    resumeVisualizer()
+  }
   startListening()
 }
 

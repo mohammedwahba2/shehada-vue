@@ -14,7 +14,7 @@ const toggleTheme = () => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-30 bg-white/80 dark:bg-ink/80 backdrop-blur-sm">
+  <header>
     <nav
       class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8"
       role="navigation"

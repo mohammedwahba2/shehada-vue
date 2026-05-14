@@ -43,6 +43,11 @@ export const useSpeechRecognition = (
   const accumulatedRef = ref('')
   const startGenerationRef = ref(0)
 
+  // Detect iOS specifically for special handling
+  const isIOS =
+    typeof navigator !== 'undefined' &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+
   const isMobileBrowser =
     typeof navigator !== 'undefined' &&
     /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -112,6 +117,9 @@ export const useSpeechRecognition = (
 
       if (!active || paused) return
 
+      // Use longer delay on iOS to avoid NotAllowedError
+      const restartDelay = isIOS ? 300 : 120
+
       setTimeout(() => {
         if (
           !sessionRefs.sessionActiveRef.value ||
@@ -121,7 +129,7 @@ export const useSpeechRecognition = (
         }
 
         startListening()
-      }, 120)
+      }, restartDelay)
     }
 
     return rec
