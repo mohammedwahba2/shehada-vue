@@ -50,7 +50,9 @@ const baseClasses = [
     ]"
     @click="emit('click')"
   >
-    <BookText v-if="props.variant === 'certificate'" :size="20" class="shrink-0" />
+    <AppIcon v-if="props.variant === 'certificate'" :size="20">
+      <BookText :size="20" :stroke-width="2" />
+    </AppIcon>
     <slot />
   </button>
 </template>

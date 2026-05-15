@@ -50,10 +50,10 @@ onUnmounted(() => {
       aria-label="Open menu"
       :aria-expanded="isOpen"
       aria-controls="mobile-menu"
-      class="hidden h-8 w-8 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 max-md:flex md:h-10 md:w-10 focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40"
+      class="icon-btn max-md:flex md:hidden"
       @click="isOpen = true"
     >
-      <Menu :size="18" />
+      <AppIcon :size="18"><Menu :size="18" :stroke-width="2" /></AppIcon>
     </button>
 
     <!-- Backdrop -->
@@ -81,10 +81,10 @@ onUnmounted(() => {
 
         <button
           aria-label="Close menu"
-          class="flex h-8 w-8 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40"
+          class="icon-btn"
           @click="isOpen = false"
         >
-          <X :size="18" />
+          <AppIcon :size="18"><X :size="18" :stroke-width="2" /></AppIcon>
         </button>
       </div>
 

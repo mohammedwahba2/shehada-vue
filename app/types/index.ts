@@ -29,6 +29,7 @@ export interface SessionRefs {
 export interface SpeechRecognitionHook {
   transcript: Readonly<Ref<string>>;
   isListening: Readonly<Ref<boolean>>;
+  isSpeechActive: Readonly<Ref<boolean>>;
   hasSupport: boolean;
   error: Readonly<Ref<string | null>>;
   startListening: () => void;

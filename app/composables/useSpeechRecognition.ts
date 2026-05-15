@@ -19,6 +19,8 @@ export interface SessionRefs {
 export interface SpeechRecognitionHook {
   transcript: Readonly<Ref<string>>
   isListening: Readonly<Ref<boolean>>
+  /** True while the engine detects voice (mobile-friendly visualizer signal) */
+  isSpeechActive: Readonly<Ref<boolean>>
   hasSupport: boolean
   error: Readonly<Ref<string | null>>
   startListening: () => void
@@ -37,7 +39,24 @@ export const useSpeechRecognition = (
 ): SpeechRecognitionHook => {
   const transcript = ref('')
   const isListening = ref(false)
+  const isSpeechActive = ref(false)
   const error = ref<string | null>(null)
+
+  let speechIdleTimer: ReturnType<typeof setTimeout> | null = null
+
+  const markSpeechActive = () => {
+    isSpeechActive.value = true
+    if (speechIdleTimer) clearTimeout(speechIdleTimer)
+    speechIdleTimer = setTimeout(() => {
+      isSpeechActive.value = false
+    }, 450)
+  }
+
+  const clearSpeechActive = () => {
+    if (speechIdleTimer) clearTimeout(speechIdleTimer)
+    speechIdleTimer = null
+    isSpeechActive.value = false
+  }
 
   const recognitionRef = ref<SpeechRecognition | null>(null)
   const accumulatedRef = ref('')
@@ -70,7 +89,16 @@ export const useSpeechRecognition = (
     rec.continuous = !isMobileBrowser
     rec.maxAlternatives = 1
 
+    rec.onsoundstart = () => {
+      markSpeechActive()
+    }
+
+    rec.onspeechstart = () => {
+      markSpeechActive()
+    }
+
     rec.onresult = (event: SpeechRecognitionEvent) => {
+      markSpeechActive()
       const start = event.resultIndex ?? 0
       let interim = ''
 
@@ -109,6 +137,7 @@ export const useSpeechRecognition = (
 
     rec.onend = () => {
       isListening.value = false
+      clearSpeechActive()
 
       if (!sessionRefs) return
 
@@ -186,6 +215,7 @@ export const useSpeechRecognition = (
 
   const stopListening = () => {
     startGenerationRef.value++
+    clearSpeechActive()
 
     try {
       recognitionRef.value?.abort()
@@ -212,6 +242,7 @@ export const useSpeechRecognition = (
 
   onUnmounted(() => {
     startGenerationRef.value++
+    clearSpeechActive()
     try {
       recognitionRef.value?.abort()
     } catch {}
@@ -221,6 +252,7 @@ export const useSpeechRecognition = (
   return {
     transcript: readonly(transcript),
     isListening: readonly(isListening),
+    isSpeechActive: readonly(isSpeechActive),
     hasSupport,
     error: readonly(error),
     startListening,

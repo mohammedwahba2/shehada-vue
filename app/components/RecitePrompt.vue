@@ -109,30 +109,23 @@ const buttonDisabled = computed(() => isPlaying.value)
       @click="handleManualPlay"
       :disabled="buttonDisabled"
       aria-label="Play pronunciation"
-      class="flex h-10 w-10 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+      class="icon-btn icon-btn--lg shrink-0"
     >
-      <!-- Loading state -->
-      <Loader2 
-        v-if="isPlaying && !playbackError" 
-        :size="22" 
-        :stroke-width="1.75"
-        class="animate-spin"
-      />
-      
-      <!-- Error state -->
-      <VolumeX 
-        v-else-if="playbackError" 
-        :size="22" 
-        :stroke-width="1.75"
-        class="text-red-500"
-      />
-      
-      <!-- Normal state -->
-      <Volume2 
-        v-else 
-        :size="22" 
-        :stroke-width="1.75" 
-      />
+      <AppIcon :size="22">
+        <Loader2
+          v-if="isPlaying && !playbackError"
+          :size="22"
+          :stroke-width="1.75"
+          class="animate-spin"
+        />
+        <VolumeX
+          v-else-if="playbackError"
+          :size="22"
+          :stroke-width="1.75"
+          class="text-red-500"
+        />
+        <Volume2 v-else :size="22" :stroke-width="1.75" />
+      </AppIcon>
     </button>
   </div>
 

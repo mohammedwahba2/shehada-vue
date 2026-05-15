@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* icon buttons — fixed box prevents Lucide SVG collapse on mobile flex layouts */
+.icon-btn {
+  @apply flex shrink-0 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 active:bg-ink/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:ring-white/40;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+.icon-btn--lg {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+}
+
 /* base */
 body {
   margin: 0;

@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
   
   // App configuration
   app: {
@@ -20,6 +20,10 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'apple-touch-icon', href: '/favicon.ico' },
+        { rel: 'preload', href: '/orbs/listen.svg', as: 'image', type: 'image/svg+xml' },
+        { rel: 'preload', href: '/orbs/speak.svg', as: 'image', type: 'image/svg+xml' },
+        { rel: 'preload', href: '/orbs/engage.svg', as: 'image', type: 'image/svg+xml' },
+        { rel: 'preload', href: '/orbs/error.svg', as: 'image', type: 'image/svg+xml' },
       ],
     },
   },
@@ -32,7 +36,6 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@nuxtjs/google-fonts',
-    '@nuxtjs/seo'
   ],
 
   // Color mode configuration
@@ -58,7 +61,9 @@ export default defineNuxtConfig({
       Tajawal: [400, 500, 700],
     },
     display: 'swap',
-    download: true,
+    prefetch: true,
+    preconnect: true,
+    download: false,
     inject: true,
   },
 
@@ -84,20 +89,4 @@ export default defineNuxtConfig({
     },
   },
 
-  // SEO configuration
-  site: {
-    name: 'Shahada App',
-    description: 'Learn and recite the Shahada with real-time Arabic transcription and voice recognition.',
-    defaultLocale: 'en',
-  },
-
-  // Robots configuration
-  robots: {
-    disallow: [],
-  },
-
-  // Sitemap configuration
-  sitemap: {
-    urls: ['/'],
-  },
 })

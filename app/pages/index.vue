@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { shahadaSteps } from '~/constants/shahadaSteps'
 import type { OrbVisualMode, SessionRefs } from '~/types'
+import {
+  cleanDisplayTranscript,
+  countConsecutiveSteps,
+  countConsecutiveWordsMatched,
+  normalizeTranscript,
+} from '~/utils/shahadaMatch'
 
 /** Threshold for detecting speech onset */
 const SPEAKING_ON = 40
 /** Threshold for detecting speech offset */
 const SPEAKING_OFF = 30
 
-/** Mobile device detection - used to disable visualizer on mobile */
-const isMobileDevice = typeof navigator !== 'undefined'
-  ? /iPad|iPhone|iPod|Android/i.test(navigator.userAgent)
-  : false
+const { isMobile } = useIsMobile()
 
 const isRecording = ref(false)
 const startupError = ref<string | null>(null)
@@ -35,13 +38,14 @@ const {
   resumeVisualizer 
 } = useAudioVisualizer()
 
-const { 
-  transcript, 
-  hasSupport, 
-  error, 
-  startListening, 
-  stopListening, 
-  resetTranscript 
+const {
+  transcript,
+  hasSupport,
+  error,
+  isSpeechActive,
+  startListening,
+  stopListening,
+  resetTranscript,
 } = useSpeechRecognition(speechSessionRefs)
 
 
@@ -65,66 +69,6 @@ useHead({
     { rel: 'canonical', href: 'https://shehada-vue.vercel.app' }
   ]
 })
-
-const normalizeTranscript = (value: string): string =>
-  value.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/\s+/g, ' ').trim()
-
-const stripForCompare = (value: string): string =>
-  value.normalize('NFD').replace(/\p{M}/gu, '').replace(/[أإآٱأ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي').trim()
-
-const countConsecutiveWordsMatched = (expected: string, actual: string): number => {
-  const expectedWords = stripForCompare(expected).split(/\s+/)
-  const actualWords = stripForCompare(actual).split(/\s+/)
-  let matched = 0
-  let j = 0
-  for (const word of actualWords) {
-    if (j < expectedWords.length && expectedWords[j] === word) {
-      matched++
-      j++
-    }
-  }
-  return matched
-}
-
-const cleanDisplayTranscript = (text: string): string => {
-  if (!text) return ""
-  const words = text.trim().split(/\s+/)
-  return words.filter((word, index) => word !== words[index - 1]).join(" ")
-}
-
-const countConsecutiveSteps = (raw: string, normalized: string, fromStep: number = 0): number => {
-  const compactRaw = stripForCompare(raw)
-  let lastIndex = 0
-  let matched = 0
-
-  for (let i = 0; i < shahadaSteps.length; i++) {
-    const step = shahadaSteps[i]
-    if (!step) continue
-    if (i < fromStep) { matched++; continue }
-
-    const arabic = stripForCompare(step.arabic)
-    const hints = (step.compactHints ?? []).map(h => stripForCompare(h))
-
-    let bestStart = -1
-    let bestLen = 0
-
-    for (const cand of [arabic, ...hints]) {
-      const idx = compactRaw.indexOf(cand, lastIndex)
-      if (idx !== -1 && (bestStart === -1 || idx < bestStart)) {
-        bestStart = idx
-        bestLen = cand.length
-      }
-    }
-
-    if (bestStart !== -1) {
-      matched++
-      lastIndex = bestStart + bestLen
-      continue
-    }
-    break
-  }
-  return matched
-}
 
 const normalized = computed(() => normalizeTranscript(transcript.value))
 
@@ -153,12 +97,15 @@ const smoothVolume = ref(0)
 const isSpeaking = ref(false)
 watch(volume, (v) => {
   smoothVolume.value = smoothVolume.value * 0.8 + v * 0.2
-  if (!isRecording.value) {
-    isSpeaking.value = false
-    return
-  }
+  if (!isRecording.value || isMobile.value) return
   if (!isSpeaking.value && smoothVolume.value >= SPEAKING_ON) isSpeaking.value = true
   else if (isSpeaking.value && smoothVolume.value <= SPEAKING_OFF) isSpeaking.value = false
+})
+
+/** On mobile, mic visualizer is off — drive orb from speech API events instead */
+watch(isSpeechActive, (active) => {
+  if (!isRecording.value || !isMobile.value) return
+  isSpeaking.value = active
 })
 
 const orbMode = computed<OrbVisualMode>(() => {
@@ -212,12 +159,11 @@ const handleStart = async () => {
     // On mobile: DO NOT start visualizer at all
     // iOS Safari: SpeechRecognition runs in separate process and must be the ONLY one accessing mic
     // Any AudioContext (even after SpeechRecognition starts) causes conflict
-    if (isMobileDevice) {
+    if (isMobile.value) {
       recordingActive.value = true
       recognitionPausedForGuide.value = false
       isRecording.value = true
       startListening()
-      // No visualizer on mobile - orb animation based on SpeechRecognition events only
     } else {
       // On desktop: Start visualizer first (more stable)
       await startVisualizer().catch((visualizerErr) => {
@@ -268,7 +214,7 @@ const handleRestart = () => {
 const handlePromptSpeechStart = () => {
   recognitionPausedForGuide.value = true
   // Only suspend visualizer on desktop - on mobile it's not running
-  if (!isMobileDevice) {
+  if (!isMobile.value) {
     suspendVisualizer()
   }
   stopListening()
@@ -277,7 +223,7 @@ const handlePromptSpeechStart = () => {
 const handlePromptSpeechEnd = () => {
   recognitionPausedForGuide.value = false
   // Only resume visualizer on desktop - on mobile it's not running
-  if (!isMobileDevice) {
+  if (!isMobile.value) {
     resumeVisualizer()
   }
   startListening()
@@ -358,6 +304,22 @@ const subtitle = computed(() =>
 
         <Certificate v-if="isComplete" @restart="handleRestart" />
       </div>
+
+      <section
+        id="about"
+        class="mt-20 w-full max-w-lg scroll-mt-24 border-t border-zinc-200 pt-10 text-center dark:border-zinc-700"
+      >
+        <h2 class="text-lg font-semibold text-ink dark:text-white sm:text-xl">
+          About the Shahada
+        </h2>
+        <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 sm:text-base">
+          The Shahada is the Islamic declaration of faith. This app guides you through each phrase
+          with pronunciation audio and real-time voice feedback so you can recite it confidently.
+        </p>
+        <p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+          Your voice is processed locally in the browser. Nothing is uploaded to a server.
+        </p>
+      </section>
     </div>
   </main>
 </template>

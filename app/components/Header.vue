@@ -4,10 +4,8 @@ import { navigationLinks } from '~/constants/navigation'
 
 const colorMode = useColorMode()
 
-/** Whether the current theme is dark mode */
 const isDark = computed(() => colorMode.value === 'dark')
 
-/** Toggle between light and dark themes */
 const toggleTheme = () => {
   colorMode.preference = isDark.value ? 'light' : 'dark'
 }
@@ -22,18 +20,18 @@ const toggleTheme = () => {
     >
       <NuxtLink
         to="/"
-        class="text-lg font-bold text-zinc-900 dark:text-white sm:text-xl focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40 rounded-full px-2 py-1"
+        class="rounded-full px-2 py-1 text-lg font-bold text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 dark:text-white dark:focus-visible:ring-white/40 sm:text-xl"
       >
         SHAHADA
       </NuxtLink>
-      
+
       <ul
         class="hidden items-center gap-12 text-sm font-semibold uppercase tracking-wide text-ink dark:text-white md:flex"
       >
         <li v-for="link in navigationLinks" :key="link.href">
           <NuxtLink
             :to="link.href"
-            class="transition hover:text-zinc-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40 rounded-full px-2 py-1"
+            class="rounded-full px-2 py-1 transition hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 dark:hover:text-white dark:focus-visible:ring-white/40"
           >
             {{ link.label }}
           </NuxtLink>
@@ -44,11 +42,13 @@ const toggleTheme = () => {
         <button
           type="button"
           :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-          class="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border border-ink text-ink transition hover:bg-ink/10 active:bg-ink/15 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-ink/40 dark:focus:ring-white/40"
+          class="icon-btn"
           @click="toggleTheme"
         >
-          <Sun v-if="isDark" :size="18" :stroke-width="2" class="text-current" />
-          <Moon v-else :size="18" :stroke-width="2" class="text-current" />
+          <AppIcon :size="18">
+            <Sun v-if="isDark" :size="18" :stroke-width="2" />
+            <Moon v-else :size="18" :stroke-width="2" />
+          </AppIcon>
         </button>
 
         <MobileMenu />

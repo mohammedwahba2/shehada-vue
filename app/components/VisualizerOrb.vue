@@ -3,13 +3,11 @@ import { computed } from 'vue'
 import type { OrbVisualMode } from '../types'
 
 interface Props {
-  /** The visual mode/state of the orb */
   mode: OrbVisualMode
 }
 
 const props = defineProps<Props>()
 
-/** Map of orb modes to their corresponding SVG assets */
 const orbAsset = computed(() => {
   switch (props.mode) {
     case 'listening':
@@ -23,33 +21,74 @@ const orbAsset = computed(() => {
   }
 })
 
-/** Accessibility label for the orb based on current mode */
 const orbLabel = computed(() => {
   const labels: Record<OrbVisualMode, string> = {
     listening: 'Listening for your voice',
     speaking: 'Speaking - please listen',
     engaged: 'Good job! Keep going',
     error: 'Error occurred',
-    idle: 'Ready to start'
+    idle: 'Ready to start',
   }
   return labels[props.mode] || 'Audio visualizer'
 })
+
+const { markup: orbMarkup } = useOrbSvg(orbAsset)
 </script>
 
-
 <template>
-  <div 
-    class="flex items-center justify-center"
+  <div
+    class="orb-wrap flex items-center justify-center"
     role="img"
     :aria-label="orbLabel"
   >
-    <img
-      :src="orbAsset"
-      :alt="orbLabel"
-      width="200"
-      height="200"
-      draggable="false"
-      class="h-52 w-52 max-w-full transition-opacity duration-300 sm:h-64 sm:w-64"
+    <!-- Inline SVG (not img/object) — animations + gradients work on mobile Safari -->
+    <div
+      v-if="orbMarkup"
+      :key="orbAsset"
+      class="orb-svg"
+      aria-hidden="true"
+      v-html="orbMarkup"
     />
+    <span class="sr-only">{{ orbLabel }}</span>
   </div>
 </template>
+
+<style scoped>
+.orb-wrap {
+  width: 13rem;
+  height: 13rem;
+  flex-shrink: 0;
+  contain: layout style;
+}
+
+@media (min-width: 640px) {
+  .orb-wrap {
+    width: 16rem;
+    height: 16rem;
+  }
+}
+
+.orb-svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.orb-svg :deep(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>

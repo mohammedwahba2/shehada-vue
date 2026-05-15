@@ -23,65 +23,61 @@ The app helps you learn the Shahada by:
 ## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Run dev server
 npm run dev
-
-# Build for production
+npm test
 npm run build
+npm run preview
 ```
+
+### Deploy (Vercel)
+
+1. Push the repo to GitHub.
+2. Import the project in [Vercel](https://vercel.com).
+3. Optional: set `NUXT_PUBLIC_SITE_URL` for canonical URLs.
+4. Deploy — no server secrets required.
 
 ## Project Structure
 
 ```
 app/
 ├── components/        # Vue components
-│   ├── RecitePrompt.vue    # Audio playback for each step
-│   ├── VisualizerOrb.vue   # Audio visualizer
-│   ├── Certificate.vue     # Completion certificate
-│   └── ...
-├── composables/       # Reusable logic
-│   ├── useSpeechRecognition.ts   # Voice recognition
-│   ├── useAudioVisualizer.ts     # Mic visualization
-│   └── useAudioPlayback.ts       # Audio playback
-├── types/             # TypeScript definitions
-└── constants/         # Static data (shahada steps, navigation)
+├── composables/       # useSpeechRecognition, useAudioVisualizer, useAudioPlayback, useOrbSvg
+├── utils/             # Shahada matching helpers + tests
+└── constants/         # shahadaSteps
+public/
+├── orbs/              # Figma SVG assets (listen, speak, engage, error)
+└── audio/             # Step pronunciation guides (step1–5.m4a)
 ```
 
-## How the Voice Recognition Works
+## Voice Recognition
 
-1. The app requests microphone access via `getUserMedia`
-2. Uses the Web Speech API's `SpeechRecognition` to transcribe Arabic speech
-3. Normalizes the transcript (removes diacritics, standardizes Arabic letter forms)
-4. Matches against the 5 Shahada steps using consecutive word matching
-5. Advances to the next step when a match is found
-
-The matching algorithm handles common pronunciation variations and Arabic letter substitutions that non-native speakers might make.
-
-## Audio Playback
-
-The `useAudioPlayback` composable handles browser autoplay restrictions:
-- Autoplay only works after user interaction
-- Includes retry logic with exponential backoff
-- Shows visual feedback (loading spinner, error icon)
-- Generation-based cancellation prevents overlapping plays
+1. Microphone access via `getUserMedia`
+2. Web Speech API (`ar-SA`) with interim + final results
+3. Arabic normalization and consecutive step matching
+4. Auto-advance through 5 Shahada steps
 
 ## Audio Visualization
 
-The orb animation is driven by real-time microphone input:
-- Creates an `AudioContext` with `AnalyserNode`
-- Calculates RMS (Root Mean Square) volume each frame
-- Maps volume to the orb's visual state
+- Figma SVG orbs rendered **inline in the DOM** (not `<img>`) for iOS Safari compatibility
+- SVG backgrounds use native gradients (no `foreignObject`) for mobile support
+- **Desktop:** Web Audio `AnalyserNode` drives speaking vs listening
+- **Mobile:** Speech API events drive orb state (iOS cannot share mic between Speech Recognition and AudioContext)
+- All orbs are preloaded on mount to avoid flashes when the mode changes
 
 ## Browser Support
 
-Works best in Chrome, Edge, and Safari. Firefox requires enabling `media.webspeech.recognition.enable` in `about:config`.
+| Platform | Recommendation |
+|----------|----------------|
+| Desktop | Chrome, Edge, Safari, Firefox* |
+| iPhone | **Safari only** for speech recognition |
+| Android | Chrome |
+
+\*Firefox: enable `media.webspeech.recognition.enable` in `about:config`.
 
 ## Privacy
 
-Everything runs locally in the browser. No data is sent to any server.
+All processing runs in the browser. No audio or transcripts are sent to a server.
 
 ## License
 
