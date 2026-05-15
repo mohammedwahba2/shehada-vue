@@ -304,22 +304,6 @@ const subtitle = computed(() =>
 
         <Certificate v-if="isComplete" @restart="handleRestart" />
       </div>
-
-      <section
-        id="about"
-        class="mt-20 w-full max-w-lg scroll-mt-24 border-t border-zinc-200 pt-10 text-center dark:border-zinc-700"
-      >
-        <h2 class="text-lg font-semibold text-ink dark:text-white sm:text-xl">
-          About the Shahada
-        </h2>
-        <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 sm:text-base">
-          The Shahada is the Islamic declaration of faith. This app guides you through each phrase
-          with pronunciation audio and real-time voice feedback so you can recite it confidently.
-        </p>
-        <p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-          Your voice is processed locally in the browser. Nothing is uploaded to a server.
-        </p>
-      </section>
     </div>
   </main>
 </template>

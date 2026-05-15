@@ -63,7 +63,7 @@ export default defineNuxtConfig({
     display: 'swap',
     prefetch: true,
     preconnect: true,
-    download: false,
+    download: true,
     inject: true,
   },
 
